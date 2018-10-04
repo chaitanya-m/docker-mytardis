@@ -30,6 +30,8 @@ Required to add new features and/or settings to the current UWA production MyTar
 
 * rename the relevant env_template.MODULE file removing the "_template" from the name.
 * edit the env.MODULE files with the required settings.
+
+
 * template file that are not required, ensure the files are renamed and blank OR remove the relevant entry in the docker-compose.yml file.
 * rename all the env_template.MODULE files by removing the "_template" from the name.
 You can do this with a command like the one below. Use echo before mv for a dry run.
@@ -39,8 +41,17 @@ $ for MODULE in *template*; do mv "$MODULE" "${MODULE/_template/}"; done
 ```
 
 * edit the resulting env.MODULE files with the required settings.
+
+Settings in Django settings will be automagically pulled into the Django settings in your docker image.
+
 * template files that are not required: ensure the files are renamed and blank OR remove the relevant entry in the docker-compose.yml file.
 * edit Dockerfile and/or docker-compose.yml to your desired settings / alterations.
+
+For instance, Django will need an email address to report exceptions to when production code raises them; production code should clearly have debug mode set to "Off" and will email exception reports to the admin rather than display them in the browser, which is obviously a security threat.
+
+For the purposes of development though, it is fine to have debug mode "On" and this shouldn't matter. However, let us change email settings anyway. 
+
+* Let's first run the steps to obtain the latest image from DockerHub. Afterwards we will look at settings changes.
 
 
 ```
@@ -70,6 +81,36 @@ $ git merge origin/master
 $ cd ../..
 $ docker-compose build
 ```
+
+* Let's now change the email address, as previously mentioned.
+
+Open docker-compose.yml
+
+Change the DJANGO_ADMINS field. By default, it looks like this- the person whose repository we've forked. Change it to your own name and email address, and save the file.
+
+```
+	- DJANGO_ADMINS=[('Dean Taylor','dean.taylor@uwa.edu.au'),]
+```
+
+You may also want to change this field:
+
+```
+      - DJANGO_DEFAULT_FROM_EMAIL='donotreply-trudat@uwa.edu.au'
+```
+
+After editing docker-compose.yml, simply run:
+
+```
+$ docker-compose restart
+```
+
+* If you are instead changing one of the env.MODULE files, you will need to do:
+
+```
+docker-compose build
+```
+### IMPORTANT: In docker-compose.yml, remember DJANGO_DEBUG should be set to False for production code!!!
+
 
 # Configuration
 
